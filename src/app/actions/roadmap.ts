@@ -198,7 +198,7 @@ export async function updateRoadmap(
         .update(schema.roadmaps)
         .set({
           title: roadmap.title,
-          note: roadmap.title,
+          note: roadmap.note,
           categoryId: roadmap.category ? Number(roadmap.category) : 0,
         })
         .where(
