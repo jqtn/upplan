@@ -10,6 +10,7 @@ export async function GET() {
     const roadmaps = await db
       .select()
       .from(schema.roadmaps)
+      .orderBy(schema.roadmaps.createdAt)
       .where(eq(schema.roadmaps.userId, user.id));
 
     return NextResponse.json(roadmaps, { status: 200 });

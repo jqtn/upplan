@@ -22,6 +22,7 @@ export async function getRoadmaps(): Promise<{
     const roadmaps = await db
       .select()
       .from(schema.roadmaps)
+      .orderBy(schema.roadmaps.createdAt)
       .where(eq(schema.roadmaps.userId, user.id));
     return { ok: true, data: roadmaps };
   } catch (error: any) {
@@ -41,12 +42,14 @@ export async function getDetailedRoadmap(id: string) {
         and(eq(schema.roadmaps.userId, user.id), eq(schema.roadmaps.id, id))
       );
 
-    const steps: StepWithGoals[] = await db
-      .select()
-      .from(schema.steps)
-      .where(
-        and(eq(schema.steps.userId, user.id), eq(schema.steps.roadmapId, id))
-      );
+    const steps: StepWithGoals[] = sortStepsWithTopoSort(
+      await db
+        .select()
+        .from(schema.steps)
+        .where(
+          and(eq(schema.steps.userId, user.id), eq(schema.steps.roadmapId, id))
+        )
+    );
 
     for (const step of steps) {
       step.goals = await db
@@ -108,6 +111,44 @@ export async function getDetailedRoadmap(id: string) {
     console.error(error);
     return { ok: false, error: error.message };
   }
+}
+
+// Kahn のアルゴリズムによるトポロジカルソート
+function sortStepsWithTopoSort(steps: StepWithGoals[]): StepWithGoals[] {
+  const indegree = new Map<number, number>(); // 子ノードの「残りの親数」
+  const children = new Map<number, number[]>(); // 親 → 子リスト
+
+  for (const step of steps) {
+    // ルートは [0] なので、親ID 0 は無視する
+    const realParents = step.parentIds.filter((pid) => pid !== 0);
+
+    indegree.set(step.id, realParents.length);
+    for (const p of realParents) {
+      if (!children.has(p)) children.set(p, []);
+      children.get(p)!.push(step.id);
+    }
+  }
+
+  // 親が [0] だけのノードをルートとみなす
+  const queue: number[] = steps
+    .filter((n) => n.parentIds.length === 1 && n.parentIds[0] === 0)
+    .map((n) => n.id);
+
+  const order: number[] = [];
+
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    order.push(cur);
+
+    for (const child of children.get(cur) ?? []) {
+      indegree.set(child, (indegree.get(child) ?? 0) - 1);
+      if (indegree.get(child) === 0) {
+        queue.push(child);
+      }
+    }
+  }
+
+  return order.map((id) => steps.find((n) => n.id === id)!);
 }
 
 export async function getRoadmap(id: string) {
@@ -294,8 +335,8 @@ async function updateSteps(
     const stepId = inputStep.new
       ? stepIdMap[inputStep.id]
       : Number(inputStep.id);
-    const parentIds = inputStep.parentIds.map(
-      (id: string) => stepIdMap[id] ?? id
+    const parentIds: number[] = inputStep.parentIds.map(
+      (id: string) => stepIdMap[id] ?? Number(id)
     );
 
     // DBのステップを取得

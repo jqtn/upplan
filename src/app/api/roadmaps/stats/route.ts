@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const roadmaps = await db
       .select()
       .from(schema.roadmaps)
+      .orderBy(schema.roadmaps.createdAt)
       .where(eq(schema.roadmaps.userId, user.id));
 
     const totalSteps = await getTotalStepCount(user.id);
