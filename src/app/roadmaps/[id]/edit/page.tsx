@@ -253,7 +253,10 @@ async function handleSubmitRoadmap(
     if (node.id == "0") return;
 
     const parentIds = edges
-      .filter((edge: Edge) => edge.target == node.id)
+      .filter(
+        (edge: Edge) =>
+          edge.target == node.id && nodes.some((n: Node) => n.id == edge.source)
+      )
       .map((edge: Edge) => edge.source);
     if (parentIds.length == 0) {
       return;
