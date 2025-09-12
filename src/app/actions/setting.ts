@@ -29,7 +29,6 @@ export async function getSettings(): Promise<{
       .where(eq(schema.settings.userId, user.id));
     return { ok: true, data: userSettings ?? defaultSettings };
   } catch (error: any) {
-    console.error(error);
     return { ok: true, data: defaultSettings };
   }
 }

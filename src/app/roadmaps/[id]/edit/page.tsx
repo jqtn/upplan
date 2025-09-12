@@ -89,7 +89,7 @@ export default function RoadmapEditContainer({
 
   return (
     <>
-      <div className="min-h-screen py-6 px-12 space-y-6">
+      <div className="min-h-screen py-6 px-6 space-y-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-4 flex flex-col md:flex-row gap-2 justify-between items-start">
             <div>
