@@ -9,8 +9,6 @@ export type RoadmapSummaryListItem = schema.Roadmap & {
 };
 
 export type OngoingListItem = {
-  goalId: number;
-  goalTitle: string;
   stepId: number;
   stepTitle: string;
   roadmapTitle: string;
@@ -24,7 +22,6 @@ export type ActivityListItem = {
   activityContent: string | null;
   activityCount: number | null;
   activityMinutes: number | null;
-  goalTitle: string;
   stepTitle: string;
   roadmapTitle: string;
 };
@@ -41,5 +38,4 @@ export type StepInput = {
 export type GoalInput = {
   id: number;
   title: string;
-  type: number;
 };

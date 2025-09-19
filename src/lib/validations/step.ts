@@ -14,6 +14,14 @@ export const formSchema = z.object({
   note: z.string().max(500, {
     message: "500文字以内にしてください。",
   }),
+  type: z.enum(
+    [
+      ActivityType.GENERAL.toString(),
+      ActivityType.COUNT.toString(),
+      ActivityType.DURATION.toString(),
+    ],
+    { message: "選択してください" }
+  ),
   allGoalsRequired: z.enum(["true", "false"]).optional(),
   goals: z.array(
     z.object({
@@ -26,14 +34,6 @@ export const formSchema = z.object({
         .max(50, {
           message: "50文字以内にしてください。",
         }),
-      type: z.enum(
-        [
-          ActivityType.GENERAL.toString(),
-          ActivityType.COUNT.toString(),
-          ActivityType.DURATION.toString(),
-        ],
-        { message: "選択してください" }
-      ),
     })
   ),
 });

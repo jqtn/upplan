@@ -30,7 +30,7 @@ export default function ActivityListItemShort({
       <TableHeader>
         <TableRow>
           <TableHead className="max-w-[100px]">日時</TableHead>
-          <TableHead className="max-w-[200px]">ゴール</TableHead>
+          <TableHead className="max-w-[200px]">ステップ</TableHead>
           <TableHead>活動内容</TableHead>
           <TableHead></TableHead>
         </TableRow>
@@ -40,7 +40,7 @@ export default function ActivityListItemShort({
           <TableRow key={activity.id}>
             <TableCell>{activity.activityDate}</TableCell>
             <TableCell className="max-w-[200px] truncate">
-              {activity.goalTitle}
+              {activity.stepTitle}
             </TableCell>
             <TableCell className="text-muted-foreground max-w-[200px] truncate">
               {activity.activityMinutes && (

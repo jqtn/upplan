@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Edit, Trash2, Calendar, FileText, Flag } from "lucide-react";
+import { Edit, Trash2, Calendar, FileText, MapPin } from "lucide-react";
 import {
   Button,
   Badge,
@@ -33,9 +33,6 @@ export default function ActivityListItemFull({
                 <CardTitle className="text-lg md:text-xl">
                   {activity.roadmapTitle}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground font-medium">
-                  {activity.stepTitle}
-                </p>
               </div>
               <div className="flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
                 <Calendar className="h-4 w-4" />
@@ -46,8 +43,8 @@ export default function ActivityListItemFull({
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-start gap-2">
-                <Flag className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-sm">{activity.goalTitle}</p>
+                <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <p className="text-sm">{activity.stepTitle}</p>
               </div>
 
               {/* 活動内容の表示部分を以下に更新: */}

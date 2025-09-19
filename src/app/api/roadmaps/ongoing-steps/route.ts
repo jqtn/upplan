@@ -10,10 +10,9 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type");
 
   try {
-    const all = await getAllNotAchievedGoal();
-    const filtered = await filterNotAchievedGoalByType(type, all);
+    const filtered = await getNotAchievedSteps(type);
 
-    return NextResponse.json({ goals: filtered }, { status: 200 });
+    return NextResponse.json({ steps: filtered }, { status: 200 });
   } catch (error: any) {
     console.error(error);
     return NextResponse.json(
@@ -23,54 +22,25 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function getAllNotAchievedGoal(): Promise<OngoingListItem[]> {
-  const user = await getUserData();
+// 未達成の条件により未達成ステップをフィルタリングして返す
+async function getNotAchievedSteps(type: string | null) {
+  const { achievedSteps, notAchievedSteps } = await getSteps();
 
-  return await db
-    .select({
-      goalId: schema.stepGoals.id,
-      goalTitle: schema.stepGoals.title,
-      stepId: schema.steps.id,
-      stepTitle: schema.steps.title,
-      roadmapTitle: schema.roadmaps.title,
-      stepParentIds: schema.steps.parentIds,
-      roadmapCategoryId: schema.roadmaps.categoryId,
-    })
-    .from(schema.stepGoals)
-    .innerJoin(
-      schema.stepGoalStates,
-      eq(schema.stepGoals.id, schema.stepGoalStates.id)
-    )
-    .innerJoin(schema.steps, eq(schema.stepGoals.stepId, schema.steps.id))
-    .innerJoin(schema.roadmaps, eq(schema.steps.roadmapId, schema.roadmaps.id))
-    .where(
-      and(
-        eq(schema.stepGoalStates.isAchieved, false),
-        eq(schema.stepGoalStates.userId, user.id)
-      )
-    );
-}
-
-// 未達成の条件により未達成ゴールをフィルタリングする
-async function filterNotAchievedGoalByType(
-  type: string | null,
-  goals: OngoingListItem[]
-) {
   const filters: {
     [key: number]: () => Promise<OngoingListItem[]>;
   } = {
     // 直前のステップが全て達成しているステップのみ
     [StepProgressType.SEQUENTIAL_ALL]: async () => {
       // 達成済みのステップのIDを収集
-      const achievedStepIds = await getAchievedStepIds();
+      const achievedStepIds = achievedSteps.map((step) => step.stepId);
       // 達成済みのステップを親に持つ場合のみ抽出
-      return goals.filter((goal: OngoingListItem) => {
+      return notAchievedSteps.filter((step: OngoingListItem) => {
         // 達成済みのステップは除外
-        if (achievedStepIds.includes(goal.stepId)) return false;
+        if (achievedStepIds.includes(step.stepId)) return false;
         // 前がなければOK
-        if (goal.stepParentIds[0] == 0) return true;
+        if (step.stepParentIds[0] == 0) return true;
         // 前の全てが達成済みステップならOK
-        return goal.stepParentIds.every((parentId: number) =>
+        return step.stepParentIds.every((parentId: number) =>
           achievedStepIds.includes(parentId)
         );
       });
@@ -79,38 +49,44 @@ async function filterNotAchievedGoalByType(
     // 直前のステップが１つでも達成しているステップのみ
     [StepProgressType.SEQUENTIAL_ANY]: async () => {
       // 達成済みのステップのIDを収集
-      const achievedStepIds = await getAchievedStepIds();
+      const achievedStepIds = achievedSteps.map((step) => step.stepId);
       // 達成済みのステップを親に持つ場合のみ抽出
-      return goals.filter((goal: OngoingListItem) => {
+      return notAchievedSteps.filter((step: OngoingListItem) => {
         // 達成済みのステップは除外
-        if (achievedStepIds.includes(goal.stepId)) return false;
+        if (achievedStepIds.includes(step.stepId)) return false;
         // 前がなければOK
-        if (goal.stepParentIds[0] == 0) return true;
+        if (step.stepParentIds[0] == 0) return true;
         // 前のいずれかが達成済みステップならOK
-        return goal.stepParentIds.some((parentId: number) =>
+        return step.stepParentIds.some((parentId: number) =>
           achievedStepIds.includes(parentId)
         );
       });
     },
 
     // 全てのステップ
-    [StepProgressType.PARALLEL_ALL]: async () => goals,
+    [StepProgressType.PARALLEL_ALL]: async () => notAchievedSteps,
   };
 
   return await filters[Number(type ?? 0)]();
 }
 
-// 達成済みのステップのID一覧
-async function getAchievedStepIds(): Promise<number[]> {
-  const achievedStepIds: number[] = [];
+// ステップを達成済みと未達成に分けて取得
+async function getSteps(): Promise<{
+  achievedSteps: any[];
+  notAchievedSteps: any[];
+}> {
+  const achievedSteps: any[] = [];
+  const notAchievedSteps: any[] = [];
 
   const user = await getUserData();
+
   const steps = await db
     .select({
-      id: schema.steps.id,
-      title: schema.steps.title,
-      roadmap: schema.roadmaps.title,
-      parentIds: schema.steps.parentIds,
+      stepId: schema.steps.id,
+      stepTitle: schema.steps.title,
+      roadmapTitle: schema.roadmaps.title,
+      stepParentIds: schema.steps.parentIds,
+      roadmapCategoryId: schema.roadmaps.categoryId,
       allGoalsRequired: schema.steps.allGoalsRequired,
     })
     .from(schema.steps)
@@ -119,34 +95,18 @@ async function getAchievedStepIds(): Promise<number[]> {
 
   for (const step of steps) {
     const goals = await db
-      .select({
-        id: schema.stepGoals.id,
-        title: schema.stepGoals.title,
-      })
-      .from(schema.stepGoals)
-      .where(eq(schema.stepGoals.stepId, step.id));
-    const achivedGoals = await db
       .select()
       .from(schema.stepGoalStates)
-      .where(
-        and(
-          inArray(
-            schema.stepGoalStates.id,
-            goals.map((goal) => goal.id)
-          ),
-          eq(schema.stepGoalStates.isAchieved, true)
-        )
-      );
-    if (step.allGoalsRequired) {
-      if (achivedGoals.length == goals.length) {
-        achievedStepIds.push(step.id);
-      }
+      .where(eq(schema.stepGoalStates.stepId, step.stepId));
+    const isAchived = step.allGoalsRequired
+      ? goals.every((goal) => goal.isAchieved)
+      : goals.some((goal) => goal.isAchieved);
+    if (isAchived) {
+      achievedSteps.push(step);
     } else {
-      if (achivedGoals.length > 0) {
-        achievedStepIds.push(step.id);
-      }
+      notAchievedSteps.push(step);
     }
   }
 
-  return achievedStepIds;
+  return { achievedSteps, notAchievedSteps };
 }

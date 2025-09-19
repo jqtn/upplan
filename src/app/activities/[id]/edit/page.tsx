@@ -39,7 +39,7 @@ export default function EditActivity({
       | FormValues[ActivityType.COUNT]
       | FormValues[ActivityType.DURATION]
   ) {
-    return await updateActivity(id, activity.goalType, data);
+    return await updateActivity(id, activity.type, data);
   }
 
   return (
@@ -51,35 +51,32 @@ export default function EditActivity({
         <LoadError />
       ) : !activity ? (
         <LoadNoData />
-      ) : activity.goalType == ActivityType.GENERAL ? (
+      ) : activity.type == ActivityType.GENERAL ? (
         <ActivityFormGeneral
           onSubmit={onSubmit}
           onComplete={() => router.push("/activities")}
           onCancel={() => router.push("/activities")}
-          goalTitle={activity.goalTitle}
           stepTitle={activity.stepTitle}
           roadmapTitle={activity.roadmapTitle}
           date={activity.actDate}
           content={activity.actContent}
         />
-      ) : activity.goalType == ActivityType.COUNT ? (
+      ) : activity.type == ActivityType.COUNT ? (
         <ActivityFormCount
           onSubmit={onSubmit}
           onComplete={() => router.push("/activities")}
           onCancel={() => router.push("/activities")}
-          goalTitle={activity.goalTitle}
           stepTitle={activity.stepTitle}
           roadmapTitle={activity.roadmapTitle}
           date={activity.actDate}
           content={activity.actContent}
           count={activity.actCount}
         />
-      ) : activity.goalType == ActivityType.DURATION ? (
+      ) : activity.type == ActivityType.DURATION ? (
         <ActivityFormDuration
           onSubmit={onSubmit}
           onComplete={() => router.push("/activities")}
           onCancel={() => router.push("/activities")}
-          goalTitle={activity.goalTitle}
           stepTitle={activity.stepTitle}
           roadmapTitle={activity.roadmapTitle}
           date={activity.actDate}

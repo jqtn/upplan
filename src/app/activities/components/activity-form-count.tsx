@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import {
   Button,
@@ -26,7 +26,6 @@ export default function ActivityFormCount({
   onSubmit,
   onComplete,
   onCancel,
-  goalTitle,
   stepTitle,
   roadmapTitle,
   date,
@@ -36,7 +35,6 @@ export default function ActivityFormCount({
   onSubmit: (data: FormValues[ActivityType.COUNT]) => void;
   onComplete: () => void;
   onCancel: () => void;
-  goalTitle: string;
   stepTitle: string;
   roadmapTitle: string;
   date?: string;
@@ -82,14 +80,11 @@ export default function ActivityFormCount({
               <CardTitle className="text-xl font-bold text-foreground">
                 {roadmapTitle}
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1 font-medium">
-                {stepTitle}
-              </p>
             </div>
             <div className="flex items-start gap-2">
-              <Flag className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+              <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-sm text-foreground leading-relaxed">
-                {goalTitle}
+                {stepTitle}
               </p>
             </div>
           </CardHeader>

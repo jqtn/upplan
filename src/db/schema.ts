@@ -31,6 +31,7 @@ export const steps = pgTable("steps", {
   title: varchar("title").notNull(),
   note: text("note"),
   allGoalsRequired: boolean("all_goals_required").notNull().default(false),
+  type: smallint("type").default(0).notNull(),
   parentIds: json("parent_ids").$type<number[]>().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -46,7 +47,6 @@ export const stepGoals = pgTable("step_goals", {
     .notNull()
     .references(() => steps.id),
   title: varchar("title").notNull(),
-  type: smallint("type").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -72,9 +72,9 @@ export const activities = pgTable("activities", {
   roadmapId: uuid("roadmap_id")
     .notNull()
     .references(() => roadmaps.id),
-  stepGoalId: bigint("step_goal_id", { mode: "number" })
+  stepId: bigint("step_id", { mode: "number" })
     .notNull()
-    .references(() => stepGoals.id),
+    .references(() => steps.id),
   actDate: date("act_date").notNull(),
   actContents: text("act_contents"),
   actCount: smallint("act_count"),

@@ -16,7 +16,7 @@ export async function getActivity(publicId: string) {
         actContents: schema.activities.actContents,
         actCount: schema.activities.actCount,
         actMinutes: schema.activities.actMinutes,
-        goalId: schema.activities.stepGoalId,
+        stepId: schema.activities.stepId,
       })
       .from(schema.activities)
       .where(
@@ -29,13 +29,11 @@ export async function getActivity(publicId: string) {
     if (activity) {
       const [target] = await db
         .select({
-          goalTitle: schema.stepGoals.title,
-          goalType: schema.stepGoals.type,
+          type: schema.steps.type,
           stepTitle: schema.steps.title,
           roadmapTitle: schema.roadmaps.title,
         })
-        .from(schema.stepGoals)
-        .innerJoin(schema.steps, eq(schema.stepGoals.stepId, schema.steps.id))
+        .from(schema.steps)
         .innerJoin(
           schema.roadmaps,
           eq(schema.stepGoals.roadmapId, schema.roadmaps.id)
@@ -43,7 +41,7 @@ export async function getActivity(publicId: string) {
         .where(
           and(
             eq(schema.stepGoals.userId, user.id),
-            eq(schema.stepGoals.id, activity.goalId)
+            eq(schema.stepGoals.id, activity.stepId)
           )
         );
 
@@ -60,7 +58,7 @@ export async function getActivity(publicId: string) {
 }
 
 export async function createActivity(
-  goalId: number,
+  stepId: number,
   activityType: ActivityType,
   data:
     | FormValues[ActivityType.GENERAL]
@@ -76,20 +74,20 @@ export async function createActivity(
   try {
     const user = await getUserData();
 
-    const [goal] = await db
+    const [step] = await db
       .select()
-      .from(schema.stepGoals)
-      .where(eq(schema.stepGoals.id, goalId));
+      .from(schema.steps)
+      .where(eq(schema.steps.id, stepId));
 
-    if (!goal) {
-      throw new Error("goal not found");
+    if (!step) {
+      throw new Error("step not found");
     }
 
     const record = convertFormToDBrecord(data);
     const meta = {
-      roadmapId: goal.roadmapId,
+      roadmapId: step.roadmapId,
       userId: user.id,
-      stepGoalId: goalId,
+      stepId: stepId,
     };
 
     await db.insert(schema.activities).values({ ...meta, ...record });

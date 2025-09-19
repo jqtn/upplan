@@ -32,16 +32,11 @@ export async function GET(request: NextRequest) {
         activityContent: schema.activities.actContents,
         activityCount: schema.activities.actCount,
         activityMinutes: schema.activities.actMinutes,
-        goalTitle: schema.stepGoals.title,
         stepTitle: schema.steps.title,
         roadmapTitle: schema.roadmaps.title,
       })
       .from(schema.activities)
-      .innerJoin(
-        schema.stepGoals,
-        eq(schema.activities.stepGoalId, schema.stepGoals.id)
-      )
-      .innerJoin(schema.steps, eq(schema.stepGoals.stepId, schema.steps.id))
+      .innerJoin(schema.steps, eq(schema.activities.stepId, schema.steps.id))
       .innerJoin(
         schema.roadmaps,
         eq(schema.steps.roadmapId, schema.roadmaps.id)

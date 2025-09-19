@@ -65,15 +65,15 @@ export async function getDetailedRoadmap(id: string) {
       }, {} as Record<string, string>);
     };
 
-    const queryActivitiesCount = sql`SELECT step_goal_id as id, COUNT(*) as total FROM ${schema.activities} WHERE ${schema.activities.userId}=${user.id} AND ${schema.activities.roadmapId}=${id} GROUP BY step_goal_id`;
+    const queryActivitiesCount = sql`SELECT step_id as id, COUNT(*) as total FROM ${schema.activities} WHERE ${schema.activities.userId}=${user.id} AND ${schema.activities.roadmapId}=${id} GROUP BY step_id`;
     const activitiesCountMap: Record<string, string> = toMap(
       await db.execute(queryActivitiesCount)
     );
-    const queryActivityCountSum = sql`SELECT step_goal_id as id, SUM(${schema.activities.actCount}) as total FROM ${schema.activities} WHERE ${schema.activities.userId}=${user.id} AND ${schema.activities.roadmapId}=${id} GROUP BY step_goal_id`;
+    const queryActivityCountSum = sql`SELECT step_id as id, SUM(${schema.activities.actCount}) as total FROM ${schema.activities} WHERE ${schema.activities.userId}=${user.id} AND ${schema.activities.roadmapId}=${id} GROUP BY step_id`;
     const activityCountSumMap: Record<string, string> = toMap(
       await db.execute(queryActivityCountSum)
     );
-    const queryActivityMinutesSum = sql`SELECT step_goal_id as id, SUM(${schema.activities.actMinutes}) as total FROM ${schema.activities} WHERE ${schema.activities.userId}=${user.id} AND ${schema.activities.roadmapId}=${id} GROUP BY step_goal_id`;
+    const queryActivityMinutesSum = sql`SELECT step_id as id, SUM(${schema.activities.actMinutes}) as total FROM ${schema.activities} WHERE ${schema.activities.userId}=${user.id} AND ${schema.activities.roadmapId}=${id} GROUP BY step_id`;
     const activityMinutesSumMap: Record<string, string> = toMap(
       await db.execute(queryActivityMinutesSum)
     );
@@ -285,16 +285,13 @@ async function deleteUnusedSteps(
   const deleteGoalIds = deleteGoals.map((goal: schema.StepGoal) => goal.id);
 
   await db
-    .delete(schema.activities)
-    .where(inArray(schema.activities.stepGoalId, deleteGoalIds));
-  await db
     .delete(schema.stepGoalStates)
     .where(inArray(schema.stepGoalStates.id, deleteGoalIds));
   await db
     .delete(schema.stepGoals)
     .where(inArray(schema.stepGoals.id, deleteGoalIds));
 
-  // 削除されたステップをDBから削除
+  // 削除されたステップとその活動記録をDBから削除
   const keepStepIds = keepSteps.map((step: StepInput) => Number(step.id));
   await db
     .delete(schema.steps)
@@ -305,6 +302,12 @@ async function deleteUnusedSteps(
         notInArray(schema.steps.id, keepStepIds)
       )
     );
+  await db.delete(schema.activities).where(
+    notInArray(
+      schema.activities.stepId,
+      keepSteps.map((step: StepInput) => Number(step.id))
+    )
+  );
 }
 
 async function updateSteps(
@@ -392,13 +395,10 @@ async function updateGoals(
           )
         );
       // 違いがあればDB更新
-      if (
-        goal.title != inputGoal.title ||
-        goal.type != Number(inputGoal.type)
-      ) {
+      if (goal.title != inputGoal.title) {
         await db
           .update(schema.stepGoals)
-          .set({ title: inputGoal.title, type: Number(inputGoal.type) })
+          .set({ title: inputGoal.title })
           .where(
             and(
               eq(schema.stepGoals.userId, user.id),
@@ -415,7 +415,6 @@ async function updateGoals(
           userId: user.id,
           stepId: stepId,
           title: inputGoal.title,
-          type: Number(inputGoal.type),
         })
         .returning({ id: schema.stepGoals.id });
       await db.insert(schema.stepGoalStates).values({
@@ -442,26 +441,10 @@ export async function deleteRoadmap(id: string) {
         );
       const stepIds = associatedSteps.map((step) => step.id.toString());
 
-      let stepGoalIds: string[] = [];
       if (stepIds.length > 0) {
-        const associatedStepGoals = await db
-          .select({ id: schema.stepGoals.id })
-          .from(schema.stepGoals)
-          .where(inArray(schema.stepGoals.stepId, stepIds.map(Number)));
-        stepGoalIds = associatedStepGoals.map((stepGoal) =>
-          stepGoal.id.toString()
-        );
-      }
-
-      if (stepGoalIds.length > 0) {
         await db
           .delete(schema.activities)
-          .where(
-            inArray(schema.activities.stepGoalId, stepGoalIds.map(Number))
-          );
-      }
-
-      if (stepIds.length > 0) {
+          .where(inArray(schema.activities.stepId, stepIds.map(Number)));
         await db
           .delete(schema.stepGoalStates)
           .where(inArray(schema.stepGoalStates.stepId, stepIds.map(Number)));
@@ -492,26 +475,22 @@ export async function deleteRoadmap(id: string) {
   }
 }
 
-export async function getGoal(id: number) {
+export async function getStep(id: number) {
   try {
     const user = await getUserData();
 
     const [target] = await db
       .select({
-        goalTitle: schema.stepGoals.title,
-        goalType: schema.stepGoals.type,
         stepTitle: schema.steps.title,
         roadmapTitle: schema.roadmaps.title,
+        activityType: schema.steps.type,
       })
-      .from(schema.stepGoals)
-      .innerJoin(schema.steps, eq(schema.stepGoals.stepId, schema.steps.id))
+      .from(schema.steps)
       .innerJoin(
         schema.roadmaps,
-        eq(schema.stepGoals.roadmapId, schema.roadmaps.id)
+        eq(schema.steps.roadmapId, schema.roadmaps.id)
       )
-      .where(
-        and(eq(schema.stepGoals.id, id), eq(schema.stepGoals.userId, user.id))
-      );
+      .where(and(eq(schema.steps.id, id), eq(schema.steps.userId, user.id)));
 
     return { ok: true, data: target };
   } catch (error: any) {

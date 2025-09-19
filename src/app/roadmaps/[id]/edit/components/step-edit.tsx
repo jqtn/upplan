@@ -56,6 +56,7 @@ const StepEdit = forwardRef(
         title: "",
         note: "",
         allGoalsRequired: "false",
+        type: ActivityType.GENERAL.toString(),
         goals: [{ title: "" }],
       },
     });
@@ -109,6 +110,44 @@ const StepEdit = forwardRef(
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex items-center gap-2 pl-4">
+                          <FormLabel>活動記録の入力タイプ：</FormLabel>
+                          <Select
+                            {...field}
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="選択してください" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem
+                                value={ActivityType.GENERAL.toString()}
+                              >
+                                自由入力のみ
+                              </SelectItem>
+                              <SelectItem value={ActivityType.COUNT.toString()}>
+                                回数を入力
+                              </SelectItem>
+                              <SelectItem
+                                value={ActivityType.DURATION.toString()}
+                              >
+                                時間を入力
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <Card className="w-full">
                   <CardHeader>
                     <div className="flex justify-between items-start">
@@ -118,7 +157,6 @@ const StepEdit = forwardRef(
                         onClick={() =>
                           append({
                             title: "",
-                            type: ActivityType.GENERAL.toString(),
                           })
                         }
                         variant="outline"
@@ -157,49 +195,6 @@ const StepEdit = forwardRef(
                                       <X className="h-4 w-4" />
                                     </Button>
                                   )}
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`goals.${index}.type`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-2 pl-4"
-                                >
-                                  <FormLabel>活動記録の入力タイプ：</FormLabel>
-                                  <Select
-                                    {...field}
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="選択してください" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem
-                                        value={ActivityType.GENERAL.toString()}
-                                      >
-                                        自由入力のみ
-                                      </SelectItem>
-                                      <SelectItem
-                                        value={ActivityType.COUNT.toString()}
-                                      >
-                                        回数を入力
-                                      </SelectItem>
-                                      <SelectItem
-                                        value={ActivityType.DURATION.toString()}
-                                      >
-                                        時間を入力
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
                                 </div>
                               </FormControl>
                               <FormMessage />

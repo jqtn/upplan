@@ -187,7 +187,7 @@ export default function RoadmapDetail({
                                   {roadmap.activitiesCountMap[goal.id] ?? 0}件
                                 </span>
                               </div>
-                              {goal.type == ActivityType.COUNT && (
+                              {step.type == ActivityType.COUNT && (
                                 <div className="flex items-center gap-1">
                                   <RotateCw className="h-4 w-4" />
                                   <span>
@@ -197,7 +197,7 @@ export default function RoadmapDetail({
                                   </span>
                                 </div>
                               )}
-                              {goal.type == ActivityType.DURATION && (
+                              {step.type == ActivityType.DURATION && (
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-4 w-4" />
                                   <span>
@@ -214,7 +214,7 @@ export default function RoadmapDetail({
                               size="sm"
                               onClick={() =>
                                 router.push(
-                                  `/activities/new?goal_id=${goal.id}`
+                                  `/activities/new?step_id=${step.id}`
                                 )
                               }
                               className="flex items-center gap-1 cursor-pointer"

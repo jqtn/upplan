@@ -44,10 +44,10 @@ export function Dashboard() {
         <LoadError />
       ) : isLoadingOngoing || dataOngoing == null || sessionSettings == null ? (
         <Loading />
-      ) : dataOngoing.goals.length === 0 ? (
+      ) : dataOngoing.steps.length === 0 ? (
         <LoadNoData />
       ) : (
-        <OngoingList items={dataOngoing.goals} settings={sessionSettings} />
+        <OngoingList items={dataOngoing.steps} settings={sessionSettings} />
       )}
       <h1 className="text-2xl font-bold mb-6 mt-8">ロードマップのサマリー</h1>
       {errorRoadmap ? (

@@ -78,10 +78,7 @@ export default function RoadmapEditContainer({
 
       const steps = data.steps.map((step: StepWithGoals) => ({
         ...step,
-        goals: step.goals?.map((goal: schema.StepGoal) => ({
-          ...goal,
-          type: goal.type.toString(),
-        })),
+        goals: step.goals,
       }));
       stepFlowRef.current?.setFlow(steps, false);
     }
@@ -185,10 +182,10 @@ export default function RoadmapEditContainer({
                           stepEditRef.current?.reset({
                             title: (node.data.label as string) || "",
                             note: (node.data.note as string) || "",
+                            type: ActivityType.GENERAL.toString(),
                             goals: (node.data.goals as any[]) || [
                               {
                                 title: "",
-                                type: ActivityType.GENERAL.toString(),
                               },
                             ],
                             allGoalsRequired: (node.data
@@ -269,9 +266,9 @@ async function handleSubmitRoadmap(
       values: {
         title: node.data.label as string,
         note: node.data.note as string,
+        type: node.data.type as string,
         goals: node.data.goals as {
           title: string;
-          type: string;
           id?: string | undefined;
         }[],
         allGoalsRequired: node.data.allGoalsRequired ? "true" : "false",
