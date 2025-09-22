@@ -17,29 +17,45 @@ export async function generateSteps(data: FormValues) {
   try {
     // モデルにプロンプトを渡して回答を取得
     const systemPrompt = `ロードマップのステップを自動生成してください。
-フォーマットはJSONで、以下のサンプル（TOEIC600点達成のロードマップ）のように作ってください。
+フォーマットはJSONで、以下のサンプル（マッスルアップ達成のロードマップ）のように作ってください。
 '''
 [
   {
     "id": 1,
-    "title": "英語の基本を身につける",
+    "title": "基礎的な筋力をつける",
     "note": "",
+    "type": "0",
     "goals": [
-      {"title": "基本単語を覚える", "type": "0"},
-      {"title": "中学英語の文法を復習", "type": "0"}
+      {"title": "プルアップを連続で10回行える"},
+      {"title": "ディップスを連続で10回行える"}
+      {"title": "チェストタッチプルアップを連続で5回行える"},
     ]
     "allGoalsRequired": true,
     "parentIds": null
   },
   {
     "id": 2,
-    "title": "TOEIC形式に慣れる",
+    "title": "トランジションの練習",
     "note": "",
+    "type": "0",
     "goals": [
-      {"title": "公式問題を300問やる", "type": "0"}
+      {"title": "ジャンピングマッスルアップが出来る"}
+      {"title": "バンドアシストマッスルアップが出来る"}
     ]
     "allGoalsRequired": false,
     "parentIds": [1]
+  },
+  {
+    "id": 3,
+    "title": "マッスルアップの練習",
+    "note": "",
+    "type": "0",
+    "goals": [
+      {"title": "ストリクトマッスルアップが1回行える"}
+      {"title": "キッピングマッスルアップが連続で3回行える"}
+    ]
+    "allGoalsRequired": false,
+    "parentIds": [2]
   },
 ]
 '''
@@ -47,9 +63,9 @@ export async function generateSteps(data: FormValues) {
 id: ステップ番号
 title: ステップのタイトル
 note: ステップの備考
+type: 固定で"0"を入れる
 goals: ステップの達成条件 ※毎回行う活動内容ではなくステップ達成のゴール
 goals-title: ステップ達成条件のタイトル
-goals-type: 固定で"0"を入れる
 allGoalsRequired: ステップ達成条件が複数ある場合、全て必要(true)か、どれか１つだけでよいか(false)
 parentIds: 親のステップ番号の配列
 【注意事項】

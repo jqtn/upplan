@@ -115,6 +115,17 @@ export default function RoadmapDetail({
                     </div>
                     <p className="text-muted-foreground ml-11">{step.note}</p>
                   </div>
+
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      router.push(`/activities/new?step_id=${step.id}`)
+                    }
+                    className="flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4" />
+                    活動記録
+                  </Button>
                 </div>
               </CardHeader>
 
@@ -209,19 +220,6 @@ export default function RoadmapDetail({
                                 </div>
                               )}
                             </div>
-
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                router.push(
-                                  `/activities/new?step_id=${step.id}`
-                                )
-                              }
-                              className="flex items-center gap-1 cursor-pointer"
-                            >
-                              <Plus className="h-4 w-4" />
-                              活動記録
-                            </Button>
                           </div>
                         </div>
                       ))}
