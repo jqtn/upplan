@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { Loading, LoadError } from "@/components/load";
@@ -24,15 +24,15 @@ function CreateNewActivity() {
   const searchParams = useSearchParams();
   const id = searchParams.get("step_id");
   const router = useRouter();
-  const [isPending, setTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [step, setStep] = useState<any>();
 
   useEffect(() => {
-    setTransition(async () => {
-      const result = await getStep(Number(id));
+    getStep(Number(id)).then((result) => {
       if (result.ok && result.data) {
         setStep(result.data);
+        setIsLoading(false);
       } else {
         setIsError(true);
       }
@@ -59,7 +59,7 @@ function CreateNewActivity() {
   return (
     <main className="container mx-auto py-6 px-4">
       <h1 className="text-2xl font-bold mb-6">活動記録の追加</h1>
-      {isPending ? (
+      {isLoading ? (
         <Loading />
       ) : !step || isError ? (
         <LoadError />

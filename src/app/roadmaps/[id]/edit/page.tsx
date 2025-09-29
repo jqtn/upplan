@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState, useEffect, useRef, useTransition } from "react";
+import React, { use, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import {
@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
-import { schema } from "@/db";
 import { Edge, Node, ReactFlowProvider } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { StepWithGoals } from "@/types/api";
@@ -48,15 +47,15 @@ export default function RoadmapEditContainer({
     setNodes: (value: React.SetStateAction<Node[]>) => false,
     setFlow: (steps: StepWithGoals[], isNew: boolean) => false,
   });
-  const [isPending, setTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setTransition(async () => {
-      openDialog({ type: "loading" });
-      const result = await getRoadmap(id);
+    openDialog({ type: "loading" });
+    getRoadmap(id).then((result) => {
       if (result.ok && result.data) {
         setRoadmap(result.data);
         closeDialog();
+        setIsLoading(false);
       } else {
         openDialog({
           title: "エラー",
@@ -127,7 +126,7 @@ export default function RoadmapEditContainer({
                     });
                   }
                 }}
-                disabled={isPending || !roadmap}
+                disabled={isLoading || !roadmap}
               >
                 保存する
               </Button>

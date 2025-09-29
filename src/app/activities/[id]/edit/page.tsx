@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState, useTransition } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loading, LoadNoData, LoadError } from "@/components/load";
 import ActivityFormCount from "../../components/activity-form-count";
@@ -17,15 +17,15 @@ export default function EditActivity({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const [isPending, setTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [activity, setActivity] = useState<any>();
 
   useEffect(() => {
-    setTransition(async () => {
-      const activity = await getActivity(id);
+    getActivity(id).then((activity) => {
       if (activity.ok) {
         setActivity(activity.data);
+        setIsLoading(false);
       } else {
         setIsError(true);
       }
@@ -45,7 +45,7 @@ export default function EditActivity({
   return (
     <main className="container mx-auto py-6 px-4">
       <h1 className="text-2xl font-bold mb-6">活動記録の編集</h1>
-      {isPending ? (
+      {isLoading ? (
         <Loading />
       ) : isError ? (
         <LoadError />

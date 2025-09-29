@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use, useEffect, useTransition } from "react";
+import { useState, use, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle,
@@ -31,17 +31,17 @@ export default function RoadmapDetail({
 }) {
   const { id } = use(params);
   const [achievedGoalIds, setAchivedGoalIds] = useState<number[]>([]);
-  const [isPending, setTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [roadmap, setRoadmap] = useState<any>();
   const router = useRouter();
 
   useEffect(() => {
-    setTransition(async () => {
-      const result = await getDetailedRoadmap(id);
+    getDetailedRoadmap(id).then((result) => {
       if (result.ok) {
         setRoadmap(result.data);
         setAchivedGoalIds(result.data?.achievedGoalIds || []);
+        setIsLoading(false);
       } else {
         setIsError(true);
       }
@@ -73,7 +73,7 @@ export default function RoadmapDetail({
     }
   };
 
-  if (isPending) {
+  if (isLoading) {
     return <Loading />;
   } else if (isError) {
     return <LoadError />;
