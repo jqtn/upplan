@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import type { SessionSettings } from "@/types/session-settings";
 import { useTheme } from "next-themes";
 import { getSettings } from "@/app/actions/setting";
@@ -48,6 +54,33 @@ export const SessionSettingsProvider = ({
     }
   }, []);
 
+  const setSessionSettings = useCallback(
+    (newSettings: SessionSettings) => {
+      setSessionSettingsState({
+        categories: addDefaultCategory(newSettings.categories),
+        stepProgressType: newSettings.stepProgressType,
+        activitySummaryDays: newSettings.activitySummaryDays,
+        theme: newSettings.theme,
+      });
+      sessionStorage.setItem("version", "1.0");
+      sessionStorage.setItem(
+        "categories",
+        JSON.stringify(newSettings.categories)
+      );
+      sessionStorage.setItem(
+        "step_progress_type",
+        JSON.stringify(newSettings.stepProgressType)
+      );
+      sessionStorage.setItem(
+        "activity_summary_days",
+        JSON.stringify(newSettings.activitySummaryDays)
+      );
+      sessionStorage.setItem("theme", JSON.stringify(newSettings.theme));
+      setTheme(newSettings.theme);
+    },
+    [setTheme]
+  );
+
   useEffect(() => {
     if (needsFetch) {
       getSettings().then((result) => {
@@ -56,31 +89,7 @@ export const SessionSettingsProvider = ({
         }
       });
     }
-  }, [needsFetch]);
-
-  const setSessionSettings = (newSettings: SessionSettings) => {
-    setSessionSettingsState({
-      categories: addDefaultCategory(newSettings.categories),
-      stepProgressType: newSettings.stepProgressType,
-      activitySummaryDays: newSettings.activitySummaryDays,
-      theme: newSettings.theme,
-    });
-    sessionStorage.setItem("version", "1.0");
-    sessionStorage.setItem(
-      "categories",
-      JSON.stringify(newSettings.categories)
-    );
-    sessionStorage.setItem(
-      "step_progress_type",
-      JSON.stringify(newSettings.stepProgressType)
-    );
-    sessionStorage.setItem(
-      "activity_summary_days",
-      JSON.stringify(newSettings.activitySummaryDays)
-    );
-    sessionStorage.setItem("theme", JSON.stringify(newSettings.theme));
-    setTheme(newSettings.theme);
-  };
+  }, [needsFetch, setSessionSettings]);
 
   return (
     <SessionSettingsContext.Provider
