@@ -11,7 +11,7 @@ export async function generateSteps(data: FormValues) {
 
   const model = new ChatAnthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
-    model: "claude-3-7-sonnet-latest",
+    model: process.env.ANTHROPIC_MODEL,
   });
 
   try {
