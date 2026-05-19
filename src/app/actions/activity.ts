@@ -22,8 +22,8 @@ export async function getActivity(publicId: string) {
       .where(
         and(
           eq(schema.activities.userId, user.id),
-          eq(schema.activities.publicId, publicId)
-        )
+          eq(schema.activities.publicId, publicId),
+        ),
       );
 
     if (activity) {
@@ -36,13 +36,13 @@ export async function getActivity(publicId: string) {
         .from(schema.steps)
         .innerJoin(
           schema.roadmaps,
-          eq(schema.stepGoals.roadmapId, schema.roadmaps.id)
+          eq(schema.steps.roadmapId, schema.roadmaps.id),
         )
         .where(
           and(
-            eq(schema.stepGoals.userId, user.id),
-            eq(schema.stepGoals.id, activity.stepId)
-          )
+            eq(schema.steps.userId, user.id),
+            eq(schema.steps.id, activity.stepId),
+          ),
         );
 
       if (target) {
@@ -63,7 +63,7 @@ export async function createActivity(
   data:
     | FormValues[ActivityType.GENERAL]
     | FormValues[ActivityType.COUNT]
-    | FormValues[ActivityType.DURATION]
+    | FormValues[ActivityType.DURATION],
 ) {
   const parsed = formSchema[activityType].safeParse(data);
 
@@ -105,7 +105,7 @@ export async function updateActivity(
   data:
     | FormValues[ActivityType.GENERAL]
     | FormValues[ActivityType.COUNT]
-    | FormValues[ActivityType.DURATION]
+    | FormValues[ActivityType.DURATION],
 ) {
   const parsed = formSchema[activityType].safeParse(data);
 
@@ -122,8 +122,8 @@ export async function updateActivity(
       .where(
         and(
           eq(schema.activities.userId, user.id),
-          eq(schema.activities.publicId, publicId)
-        )
+          eq(schema.activities.publicId, publicId),
+        ),
       );
 
     return { ok: true };
@@ -142,8 +142,8 @@ export async function deleteActivity(publicId: string) {
       .where(
         and(
           eq(schema.activities.userId, user.id),
-          eq(schema.activities.publicId, publicId)
-        )
+          eq(schema.activities.publicId, publicId),
+        ),
       );
 
     return { ok: true };
@@ -157,7 +157,7 @@ function convertFormToDBrecord(
   data:
     | FormValues[ActivityType.GENERAL]
     | FormValues[ActivityType.COUNT]
-    | FormValues[ActivityType.DURATION]
+    | FormValues[ActivityType.DURATION],
 ) {
   const record = {
     actDate: data.date,
